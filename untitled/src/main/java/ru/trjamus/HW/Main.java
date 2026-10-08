@@ -1,4 +1,4 @@
-package ru.trjamus.chatremake;
+package ru.trjamus.HW;
 
 import java.io.*;
 
