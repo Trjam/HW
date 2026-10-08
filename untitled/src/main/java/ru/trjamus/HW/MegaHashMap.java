@@ -1,4 +1,4 @@
-package ru.trjamus.chatremake;
+package ru.trjamus.HW;
 
 public class MegaHashMap <K,V>{
     private static final int DEFAULT_INITIAL_CAPACITY = 16;
