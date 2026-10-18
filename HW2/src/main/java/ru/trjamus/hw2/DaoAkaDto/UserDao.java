@@ -64,10 +64,30 @@ public class UserDao implements UserInterface {
     @Override
     public void update(User user) {
 
+        Transaction transaction = session().beginTransaction();
+
+        try {
+            session().merge(user);
+            transaction.commit();
+        } catch (RuntimeException e) {
+            transaction.rollback();
+            throw e;
+        }
+
     }
 
     @Override
-    public void delete(UUID id) {
+    public void delete(User user) {
+
+        Transaction transaction = session().beginTransaction();
+
+        try {
+            session().remove(user);
+            transaction.commit();
+        } catch (RuntimeException e) {
+            transaction.rollback();
+            throw e;
+        }
 
     }
 }

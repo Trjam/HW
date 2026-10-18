@@ -16,6 +16,6 @@ public interface UserInterface {
 
     void update(User user);
 
-    void delete(UUID id);
+    void delete(User user);
 
 }
