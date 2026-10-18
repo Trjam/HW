@@ -3,25 +3,27 @@ package ru.trjamus.hw2.DaoAkaDto;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import ru.trjamus.hw2.Entity.User;
+import ru.trjamus.hw2.Utils.HiberUtils;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@SuppressWarnings("resource")
 public class UserDao implements UserInterface {
 
     private Session session(){
-        return null;
+        return HiberUtils.getSessionFactory().getCurrentSession();
     }
-
 
     @Override
     public void save(User user) {
 
-        Transaction transaction = session().beginTransaction();
+        Session session = session();
+        Transaction transaction = session.beginTransaction();
 
         try {
-            session().persist(user);
+            session.persist(user);
             transaction.commit();
         } catch (RuntimeException e) {
             transaction.rollback();
@@ -33,7 +35,8 @@ public class UserDao implements UserInterface {
     @Override
     public Optional<User> findById(UUID id) {
 
-        Transaction transaction = session().beginTransaction();
+        Session session = session();
+        Transaction transaction = session.beginTransaction();
 
         try {
             Optional<User> result = Optional.ofNullable(session().find(User.class,id));
@@ -49,7 +52,8 @@ public class UserDao implements UserInterface {
     @Override
     public List<User> findAll() {
 
-        Transaction transaction = session().beginTransaction();
+        Session session = session();
+        Transaction transaction = session.beginTransaction();
 
         try {
             List<User> result = session().createQuery("FROM User", User.class).list();
@@ -64,10 +68,11 @@ public class UserDao implements UserInterface {
     @Override
     public void update(User user) {
 
-        Transaction transaction = session().beginTransaction();
+        Session session = session();
+        Transaction transaction = session.beginTransaction();
 
         try {
-            session().merge(user);
+            session.merge(user);
             transaction.commit();
         } catch (RuntimeException e) {
             transaction.rollback();
@@ -79,10 +84,11 @@ public class UserDao implements UserInterface {
     @Override
     public void delete(User user) {
 
-        Transaction transaction = session().beginTransaction();
+        Session session = session();
+        Transaction transaction = session.beginTransaction();
 
         try {
-            session().remove(user);
+            session.remove(user);
             transaction.commit();
         } catch (RuntimeException e) {
             transaction.rollback();
