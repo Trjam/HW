@@ -59,7 +59,6 @@ public class UserDao implements UserInterface {
             transaction.rollback();
             throw e;
         }
-        return List.of();
     }
 
     @Override
