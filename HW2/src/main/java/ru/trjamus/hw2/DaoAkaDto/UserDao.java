@@ -96,4 +96,24 @@ public class UserDao implements UserInterface {
         }
 
     }
+
+    //что то понял что нативный то не попробовал, ну пущай кривенкий будет
+
+    @Override
+    public List<User> findAllNotKids() {
+
+        Session session = session();
+        Transaction transaction = session.beginTransaction();
+
+        try {
+            List<User> result = session()
+                    .createNativeQuery("Select * from users where age >= 18", User.class)
+                    .list();
+            transaction.commit();
+            return result;
+        } catch (RuntimeException e) {
+            transaction.rollback();
+            throw e;
+        }
+    }
 }

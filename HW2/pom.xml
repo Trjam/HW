@@ -36,15 +36,16 @@
             <version>42.6.0</version>
         </dependency>
 
+        <!-- Почитал, вроде как логбэк тот же log4j и от того же автора, но лучше с гибером работает-->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>2.20.0</version>
+            <artifactId>log4j-slf4j2-impl</artifactId>  <!-- мост SLF4J → log4j2 -->
+            <version>2.23.1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
-            <version>2.20.0</version>
+            <artifactId>log4j-core</artifactId>
+            <version>2.23.1</version>
         </dependency>
     </dependencies>
 
