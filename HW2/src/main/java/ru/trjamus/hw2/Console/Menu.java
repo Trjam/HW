@@ -23,9 +23,11 @@ public class Menu implements AutoCloseable {
             4. Тоже самое, но строго 18+
             5. Обновить юзера
             6. Минусануть юзера
-            0. Схлопнуть приложение
             
-            Сюда циферку с меню выше: """);
+            0. Схлопнуть приложение
+            -------------------------------------
+            
+            Сюда циферку с меню выше:\s""");
     }
 
     public Menu() {
@@ -42,7 +44,7 @@ public class Menu implements AutoCloseable {
                 case "1" -> createUser();
                 case "2" -> findUserById();
                 case "3" -> findAllUsers();
-                case "4" -> findNotKids();
+                case "4" -> findAllAdultsUsers();
                 case "5" -> updateUser();
                 case "6" -> deleteUser();
                 case "0" -> {
@@ -85,7 +87,7 @@ public class Menu implements AutoCloseable {
         if (id == null) return;
 
         userDao.findById(id).ifPresentOrElse(
-                System.out::println,
+                user -> beautyOut(List.of(user)),
                 () -> System.out.println("Нет таких.")
         );
     }
@@ -95,16 +97,16 @@ public class Menu implements AutoCloseable {
         if (users.isEmpty()) {
             System.out.println("Нет никого, все ушли на север.");
         } else {
-            users.forEach(System.out::println);
+            beautyOut(users);
         }
     }
 
-    private void findNotKids() {
-        List<User> users = userDao.findAllNotKids();
+    private void findAllAdultsUsers() {
+        List<User> users = userDao.findAllAdults();
         if (users.isEmpty()) {
             System.out.println("Нет никого, все ушли на север.");
         } else {
-            users.forEach(System.out::println);
+            beautyOut(users);;
         }
     }
 
@@ -153,7 +155,8 @@ public class Menu implements AutoCloseable {
         userDao.findById(id).ifPresentOrElse(
                 user -> {
                     userDao.delete(user);
-                    System.out.println("Дропнули вот его: " + user);
+                    System.out.println("Дропнули вот его: ");
+                    beautyOut(List.of(user));
                 },
                 () -> System.out.println("А нет уже таких")
         );
@@ -180,6 +183,28 @@ public class Menu implements AutoCloseable {
             return null;
         }
     }
+
+    //подсмотрел тут красоту
+    private void beautyOut(List<User> users) {
+        if (users.isEmpty()) {
+            System.out.println("Список пуст.");
+            return;
+        }
+
+        System.out.printf("%-36s | %-15s | %-25s | %-8s | %s%n",
+                "ID", "Имя", "Email", "Возраст", "Создан");
+        System.out.println("-".repeat(120));
+
+        for (User u : users) {
+            System.out.printf("%-36s | %-15s | %-25s | %-8s | %s%n",
+                    u.getId(),
+                    u.getName(),
+                    u.getEmail(),
+                    u.getAge() == null ? "—" : u.getAge(),
+                    u.getCreatedAt());
+        }
+    }
+
 
     @Override
     public void close() {
