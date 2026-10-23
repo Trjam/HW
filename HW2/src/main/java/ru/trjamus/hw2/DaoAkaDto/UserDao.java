@@ -100,7 +100,7 @@ public class UserDao implements UserInterface {
     //что то понял что нативный то не попробовал, ну пущай кривенкий будет
 
     @Override
-    public List<User> findAllNotKids() {
+    public List<User> findAllAdults() {
 
         Session session = session();
         Transaction transaction = session.beginTransaction();

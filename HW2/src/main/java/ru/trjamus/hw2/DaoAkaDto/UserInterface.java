@@ -18,6 +18,6 @@ public interface UserInterface {
 
     void delete(User user);
 
-    List<User> findAllNotKids();
+    List<User> findAllAdults();
 
 }
