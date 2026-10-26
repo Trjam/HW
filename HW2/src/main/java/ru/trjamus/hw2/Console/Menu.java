@@ -1,11 +1,13 @@
 package ru.trjamus.hw2.Console;
 
-import ru.trjamus.hw2.DaoAkaDto.UserDao;
-import ru.trjamus.hw2.DaoAkaDto.UserInterface;
-import ru.trjamus.hw2.Entity.User;
+import ru.trjamus.hw2.Dao.UserInterface;
+import ru.trjamus.hw2.entity.User;
+import ru.trjamus.hw2.Utils.Validator;
+import ru.trjamus.hw2.exception.DataAccessException;
+import ru.trjamus.hw2.exception.ResourceNotFoundException;
+import ru.trjamus.hw2.exception.ValidationException;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Scanner;
 import java.util.UUID;
 
@@ -13,175 +15,150 @@ public class Menu implements AutoCloseable {
     private final UserInterface userDao;
     private final Scanner scanner;
 
+    public Menu(UserInterface userDao) {
+        this(userDao, new Scanner(System.in));
+    }
+
+    public Menu(UserInterface userDao, Scanner scanner) {
+        this.userDao = userDao;
+        this.scanner = scanner;
+    }
+
     private void printMenu() {
         System.out.print("""
             
             --- Выбирай мудро ---
-            1. Плюсануть нового юзера
-            2. Найти юзера по айдишке
-            3. Показать всех
-            4. Тоже самое, но строго 18+
-            5. Обновить юзера
-            6. Минусануть юзера
+            1. Добавить пользователя
+            2. Найти пользователя по ID
+            3. Найти всех пользователей
+            4. Найти всех взрослых пользователей (18+)
+            5. Обновить данные пользователя
+            6. Удалить пользователя по ID
             
-            0. Схлопнуть приложение
+            0. Закрыть приложение
             -------------------------------------
             
-            Сюда циферку с меню выше:\s""");
-    }
-
-    public Menu() {
-        this.userDao = new UserDao();
-        this.scanner = new Scanner(System.in);
+            Введите номер пункта меню:\s""");
     }
 
     public void run() {
         while (true) {
             printMenu();
             String choice = scanner.nextLine().trim();
-
-            switch (choice) {
-                case "1" -> createUser();
-                case "2" -> findUserById();
-                case "3" -> findAllUsers();
-                case "4" -> findAllAdultsUsers();
-                case "5" -> updateUser();
-                case "6" -> deleteUser();
-                case "0" -> {
-                    System.out.println("Добби свободен!");
-                    return;
+            try {
+                switch (choice) {
+                    case "1" -> createUser();
+                    case "2" -> findUserById();
+                    case "3" -> findAllUsers();
+                    case "4" -> findAllAdultsUsers();
+                    case "5" -> updateUser();
+                    case "6" -> deleteUser();
+                    case "0" -> {
+                        System.out.println("Добби свободен!");
+                        return;
+                    }
+                    default -> System.out.println("Неверный ввод");
                 }
-                default -> System.out.println("Очепятка, попробуй еще разок");
+            } catch (ValidationException | ResourceNotFoundException | DataAccessException e) {
+                System.err.println("Ошибка: " + e.getMessage());
+            } catch (Exception e) {
+                System.err.println("Непредвиденная ошибка: " + e.getMessage());
             }
         }
     }
 
-    private void createUser() {
-        System.out.print("Сюда имя: ");
-        String name = scanner.nextLine().trim();
-        if (name.isEmpty()) {
-            System.out.println("Ну введи хотяб 1 символ");
-            return;
-        }
+    private String read(String prompt) {
+        System.out.print(prompt);
+        return scanner.nextLine().trim();
+    }
 
-        System.out.print("Сюда мыло: ");
-        String email = scanner.nextLine().trim();
-        if (email.isEmpty()) {
-            System.out.println("Мыло не обнаружено");
-            return;
-        }
-
-        Integer age = readInt("А сюда возраст: ");
-        if (age == null) return;
-
+    private Integer readIntOrNull(String prompt) {
+        String s = read(prompt);
+        if (s.isBlank()) return null;
         try {
-            userDao.save(new User(name, email, age));
-            System.out.println("Успешно создали юзера");
-        } catch (Exception e) {
-            System.err.println("Не создался юзер: " + e.getMessage());
+            return Integer.parseInt(s);
+        } catch (NumberFormatException e) {
+            throw new ValidationException("Ожидалось число");
         }
     }
 
+    private UUID readUuid(String prompt) {
+        String s = read(prompt);
+        try {
+            return UUID.fromString(s);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Некорректный UUID.");
+            return null;
+        }
+    }
+
+    private void createUser() {
+        System.out.println("Введите данные пользователя");
+        String name = Validator.validateName(read("Имя: "));
+        String email = Validator.validateEmail(read("Email: "));
+        Integer age = Validator.validateAge(readIntOrNull("Возраст (Enter — пропустить): "));
+
+        userDao.save(new User(name, email, age));
+        System.out.println("Пользователь создан.");
+        pause();
+    }
+
     private void findUserById() {
-        UUID id = readUuid("Сюда айдишку юзера (зря UUID сделал в этом проекте видать): ");
+        UUID id = readUuid("Введите ID пользователя для поиска: ");
         if (id == null) return;
 
         userDao.findById(id).ifPresentOrElse(
                 user -> beautyOut(List.of(user)),
-                () -> System.out.println("Нет таких.")
+                () -> System.out.println("Пользователь не найден")
         );
+        pause();
     }
 
     private void findAllUsers() {
         List<User> users = userDao.findAll();
         if (users.isEmpty()) {
-            System.out.println("Нет никого, все ушли на север.");
+            System.out.println("Пользователи не найдены");
         } else {
             beautyOut(users);
         }
+        pause();
     }
 
     private void findAllAdultsUsers() {
         List<User> users = userDao.findAllAdults();
         if (users.isEmpty()) {
-            System.out.println("Нет никого, все ушли на север.");
+            System.out.println("Взрослых не найдено");
         } else {
-            beautyOut(users);;
+            beautyOut(users);
         }
+        pause();
     }
 
     private void updateUser() {
-        UUID id = readUuid("Сюда айдишку юзера для правки: ");
+        UUID id = readUuid("Введите ID пользователя для обновления: ");
         if (id == null) return;
 
-        Optional<User> found = userDao.findById(id);
-        if (found.isEmpty()) {
-            System.out.println("Нет таких.");
-            return;
-        }
+        String name = read("Новое имя (Enter — пропустить): ");
+        String email = read("Новый email (Enter — пропустить): ");
+        Integer age = readIntOrNull("Новый возраст (Enter — пропустить): ");
 
-        User user = found.get();
+        User updatedUserData = new User();
+        if (!name.isBlank())  updatedUserData.setName(name);
+        if (!email.isBlank()) updatedUserData.setEmail(email);
+        if (age != null)      updatedUserData.setAge(age);
 
-        System.out.print("Новое имя (Enter — пропустить): ");
-        String newName = scanner.nextLine().trim();
-        if (!newName.isEmpty()) user.setName(newName);
-
-        System.out.print("Новое мыло (Enter — пропустить): ");
-        String newEmail = scanner.nextLine().trim();
-        if (!newEmail.isEmpty()) user.setEmail(newEmail);
-
-        System.out.print("Новый возраст (Enter — пропустить): ");
-        String newAge = scanner.nextLine().trim();
-        if (!newAge.isEmpty()) {
-            try {
-                user.setAge(Integer.parseInt(newAge));
-            } catch (NumberFormatException e) {
-                System.out.println("Число надо ввести, цыферки, не буковки.");
-            }
-        }
-
-        try {
-            userDao.update(user);
-            System.out.println("Успешно обновили юзера c ID " + user.getId());
-        } catch (Exception e) {
-            System.err.println("Ошибка при обновлении: " + e.getMessage());
-        }
+        userDao.update(id, updatedUserData);
+        System.out.println("Пользователь обновлён.");
+        pause();
     }
 
     private void deleteUser() {
-        UUID id = readUuid("Введи айди, кого дропнуть: ");
+        UUID id = readUuid("Введите ID пользователя для удаления: ");
         if (id == null) return;
 
-        userDao.findById(id).ifPresentOrElse(
-                user -> {
-                    userDao.delete(user);
-                    System.out.println("Дропнули вот его: ");
-                    beautyOut(List.of(user));
-                },
-                () -> System.out.println("А нет уже таких")
-        );
-    }
-
-    private UUID readUuid(String prompt) {
-        System.out.print(prompt);
-        String input = scanner.nextLine().trim();
-        try {
-            return UUID.fromString(input);
-        } catch (IllegalArgumentException e) {
-            System.out.println("Это не UUID.");
-            return null;
-        }
-    }
-
-    private Integer readInt(String prompt) {
-        System.out.print(prompt);
-        String input = scanner.nextLine().trim();
-        try {
-            return Integer.parseInt(input);
-        } catch (NumberFormatException e) {
-            System.out.println("Целое число надобно.");
-            return null;
-        }
+        userDao.deleteById(id);
+        System.out.println("Пользователь удалён.");
+        pause();
     }
 
     //подсмотрел тут красоту
@@ -205,6 +182,10 @@ public class Menu implements AutoCloseable {
         }
     }
 
+    private void pause() {
+        System.out.print("\nНажмите Enter для продолжения...");
+        scanner.nextLine();
+    }
 
     @Override
     public void close() {

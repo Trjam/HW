@@ -1,6 +1,6 @@
-package ru.trjamus.hw2.DaoAkaDto;
+package ru.trjamus.hw2.Dao;
 
-import ru.trjamus.hw2.Entity.User;
+import ru.trjamus.hw2.entity.User;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,9 +14,9 @@ public interface UserInterface {
 
     List<User> findAll();
 
-    void update(User user);
+    void update(UUID id, User changes);
 
-    void delete(User user);
+    void deleteById(UUID id);
 
     List<User> findAllAdults();
 

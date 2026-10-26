@@ -1,4 +1,4 @@
-package ru.trjamus.hw2.Entity;
+package ru.trjamus.hw2.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -8,7 +8,7 @@ import java.util.Date;
 import java.util.UUID;
 
 @Entity
-@Table(name = "Users")
+@Table(name = "Users", schema = "\"user\"")
 @NoArgsConstructor
 @Getter
 @Setter
