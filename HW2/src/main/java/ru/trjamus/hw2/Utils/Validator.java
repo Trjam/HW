@@ -14,10 +14,14 @@ public final class Validator {
     }
 
     public static String validateEmail(String email) {
-        if (email == null || !email.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")) {
+        if (email == null) {
+            throw new ValidationException("Некорректный email: null");
+        }
+        String trimmedEmail = email.trim();
+        if (!trimmedEmail.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")) {
             throw new ValidationException("Некорректный email: " + email);
         }
-        return email.trim();
+        return trimmedEmail;
     }
 
     public static Integer validateAge(Integer age) {
