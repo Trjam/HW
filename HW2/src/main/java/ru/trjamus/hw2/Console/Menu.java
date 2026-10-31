@@ -143,9 +143,9 @@ public class Menu implements AutoCloseable {
         Integer age = readIntOrNull("Новый возраст (Enter — пропустить): ");
 
         User updatedUserData = new User();
-        if (!name.isBlank())  updatedUserData.setName(name);
-        if (!email.isBlank()) updatedUserData.setEmail(email);
-        if (age != null)      updatedUserData.setAge(age);
+        if (!name.isBlank())  updatedUserData.setName(Validator.validateName(name));
+        if (!email.isBlank()) updatedUserData.setEmail(Validator.validateEmail(email));
+        if (age != null)      updatedUserData.setAge(Validator.validateAge(age));
 
         userDao.update(id, updatedUserData);
         System.out.println("Пользователь обновлён.");
