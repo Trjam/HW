@@ -1,9 +1,11 @@
 package ru.trjamus.hw2.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.trjamus.hw2.Utils.Validator;
+import ru.trjamus.hw2.dto.UserEvent;
 import ru.trjamus.hw2.dto.UserRequest;
 import ru.trjamus.hw2.dto.UserResponse;
 import ru.trjamus.hw2.dto.UserUpdateRequest;
@@ -22,6 +24,9 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final Validator userValidator;
+
+    private final KafkaTemplate<String, UserEvent> kafkaTemplate;
+    private static final String TOPIC = "user-events";
 
     public List<UserResponse> findAll() {
         return userRepository.findAll().stream().map(this::toResponse).collect(Collectors.toList());
@@ -44,7 +49,12 @@ public class UserService {
                 request.getEmail().trim(),
                 request.getAge()
         );
-        return toResponse(userRepository.saveAndFlush(user));
+
+        User saved = userRepository.saveAndFlush(user);
+
+        kafkaTemplate.send(TOPIC, new UserEvent("CREATED", saved.getEmail()));
+
+        return toResponse(saved);
     }
 
     @Transactional
@@ -73,6 +83,9 @@ public class UserService {
     public void deleteById(UUID id) {
         User user = getUserById(id);
         userRepository.delete(user);
+
+        kafkaTemplate.send(TOPIC, new UserEvent("DELETED", user.getEmail()));
+
     }
 
     private User getUserById(UUID id) {

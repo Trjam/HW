@@ -15,6 +15,11 @@ spring:
       ddl-auto: update
     show-sql: true
     open-in-view: false
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JacksonJsonSerializer
 
 springdoc:
   api-docs:
@@ -22,3 +27,10 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
     operationsSorter: method
+
+logging:
+  level:
+    ru.trjamus.hw2: DEBUG
+    org.springframework.web: INFO
+    org.apache.kafka: WARN
+    org.springframework.kafka: INFO
