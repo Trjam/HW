@@ -50,7 +50,7 @@ class NotificationIntegrationTest {
     static void overrideProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.kafka.bootstrap-servers", kafka::getBootstrapServers);
         registry.add("spring.mail.host", () -> "localhost");
-        registry.add("spring.mail.port", () -> ServerSetupTest.SMTP.getPort());
+        registry.add("spring.mail.port", ServerSetupTest.SMTP::getPort);
     }
 
     @BeforeEach
