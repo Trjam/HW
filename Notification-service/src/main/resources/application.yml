@@ -1,39 +1,14 @@
 server:
-  port: 8081
+  port: ${APP_PORT:8081}
+  address: ${APP_URL:localhost}
 
 spring:
-  kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
-    consumer:
-      group-id: notification-group
-      auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      properties:
-        spring.json.trusted.packages: "*"
-  mail:
-    host: ${MAIL_HOST}
-    port: ${MAIL_PORT}       # MailHog / GreenMail
-    username: ${MAIL_USERNAME:}
-    password: ${MAIL_PASSWORD:}
-    properties:
-      mail.smtp.auth: false
-      mail.smtp.starttls.enable: false
+  application:
+    name: notification-service
+  config:
+    import: ${CONFIG_SERVER:optional:configserver:http://localhost:8888}
 
-logging:
-  level:
-    ru.trjamus.hw2.notification: DEBUG
-    org.springframework.web: INFO
-    org.apache.kafka: WARN
-    org.springframework.kafka: INFO
-    org.apache.kafka.clients.consumer: INFO
-
-app:
-  kafka:
-    retry:
-      max-attempts: 3       # количество попыток отправки письма, если не удалось сразу отправить
-      interval-ms: 2000     # пауза между попытками в миллисекундах
-    error-handler:
-      # true  — после всех попыток offset коммитится, сообщение больше не будет прочитано
-      # false — offset не коммитится, ждем пока заработает
-      commit-after-retries: true
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
