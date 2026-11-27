@@ -1,0 +1,22 @@
+server:
+  port: ${SERVER_PORT:8888}
+
+spring:
+  application:
+    name: config-server
+  profiles:
+    active: native # локального думаю хватит, в гит пихать пока не хочется
+  cloud:
+    config:
+      server:
+        native:
+          search-locations: classpath:/config-repo
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+  instance:
+    prefer-ip-address: true
+    ip-address: ${IP:127.0.0.1}
+    hostname: ${HOST:localhost}
